@@ -5,14 +5,13 @@
 &gt; Python(Pandas)版：[点击查看](http://github.com/huibaiqiyue/taobao-user-behavior-analysis)  
 &gt; CSDN详细报告：[点击查看](你的CSDN链接)
 
-目前仓库结构：
-taobao-user-behavior-sql/
+# 目前仓库结构：
 ├── assets/
-│   └── powerbi_dashboard.png      # BI看板截图（你已有的）
+ │   └── powerbi_dashboard.png      # BI看板截图
 ├── docs/
-│   └── SQL查询.docx                # SQL查询文档
+ │   └── SQL查询.docx                # SQL查询文档
 ├── src/
-│   └── data_import.py              # Python导入MySQL代码
+ │   └── data_import.py              # Python导入MySQL代码
 ├── README.md
 └── requirements.txt
 ---
