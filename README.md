@@ -2,7 +2,7 @@
 
 基于500万+条淘宝用户行为数据，MySQL分析 + Power BI交互式可视化。
 
-&gt; Python(Pandas)版：[点击查看](github.com/huibaiqiyue/taobao-user-behavior-analysis)  
+&gt; Python(Pandas)版：[点击查看](http://github.com/huibaiqiyue/taobao-user-behavior-analysis)  
 &gt; CSDN详细报告：[点击查看](你的CSDN链接)
 
 ---
