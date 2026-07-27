@@ -1,0 +1,85 @@
+0. 确认数据总量
+USE `e-commerce`;
+SELECT COUNT(*) AS total_rows FROM user_behavior;
+1. 基础漏斗：各行为独立用户数、
+SELECT 
+    behavior_type,
+    COUNT(DISTINCT user_id) AS unique_users
+FROM user_behavior
+GROUP BY behavior_type
+ORDER BY behavior_type;
+2. 路径漏斗：浏览 → 加购 → 购买
+-- 浏览用户数
+SELECT COUNT(DISTINCT user_id) AS browse_users
+FROM user_behavior
+WHERE behavior_type = 1;
+
+-- 加购用户数
+SELECT COUNT(DISTINCT user_id) AS cart_users
+FROM user_behavior
+WHERE behavior_type = 3;
+
+-- 购买用户数
+SELECT COUNT(DISTINCT user_id) AS buy_users
+FROM user_behavior
+WHERE behavior_type = 4;
+
+-- 同时加购且购买的用户数（即在加购后发生过购买）
+SELECT COUNT(DISTINCT user_id) AS cart_and_buy_users
+FROM user_behavior
+WHERE behavior_type = 3 
+  AND user_id IN (SELECT DISTINCT user_id FROM user_behavior WHERE behavior_type = 4);
+3. 路径漏斗：浏览 → 收藏 → 购买
+-- 收藏用户数
+SELECT COUNT(DISTINCT user_id) AS fav_users
+FROM user_behavior
+WHERE behavior_type = 2;
+
+-- 同时收藏且购买的用户数
+SELECT COUNT(DISTINCT user_id) AS fav_and_buy_users
+FROM user_behavior
+WHERE behavior_type = 2 
+  AND user_id IN (SELECT DISTINCT user_id FROM user_behavior WHERE behavior_type = 4);
+4. 用户分层：基于行为频次
+-- 按用户统计各行为次数，并分层（示例：仅浏览、收藏未购买、加购未购买、购买用户等）
+WITH user_stats AS (
+    SELECT 
+        user_id,
+        SUM(behavior_type = 1) AS pv_count,
+        SUM(behavior_type = 2) AS fav_count,
+        SUM(behavior_type = 3) AS cart_count,
+        SUM(behavior_type = 4) AS buy_count
+    FROM user_behavior
+    GROUP BY user_id
+)
+SELECT 
+    CASE 
+        WHEN buy_count > 0 THEN '购买用户'
+        WHEN cart_count > 0 THEN '加购未购买'
+        WHEN fav_count > 0 THEN '收藏未购买'
+        ELSE '仅浏览'
+    END AS user_segment,
+    COUNT(*) AS user_count
+FROM user_stats
+GROUP BY user_segment
+ORDER BY user_count DESC;
+5.每日趋势（UV、PV、购买用户数、购买转化率）
+SELECT 
+    date,
+    COUNT(DISTINCT user_id) AS uv,
+    SUM(behavior_type = 1) AS pv,
+    COUNT(DISTINCT CASE WHEN behavior_type = 4 THEN user_id END) AS buy_users,
+    ROUND(COUNT(DISTINCT CASE WHEN behavior_type = 4 THEN user_id END) / COUNT(DISTINCT user_id) * 100, 2) AS buy_rate
+FROM user_behavior
+GROUP BY date
+ORDER BY date;
+可选：按小时趋势
+SELECT 
+    hour,
+    COUNT(DISTINCT user_id) AS uv,
+    SUM(behavior_type = 1) AS pv,
+    COUNT(DISTINCT CASE WHEN behavior_type = 4 THEN user_id END) AS buy_users,
+    ROUND(COUNT(DISTINCT CASE WHEN behavior_type = 4 THEN user_id END) / COUNT(DISTINCT user_id) * 100, 2) AS buy_rate
+FROM user_behavior
+GROUP BY hour
+ORDER BY hour;
